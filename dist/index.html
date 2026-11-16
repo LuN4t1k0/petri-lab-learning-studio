@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Laboratorio interactivo para aprender event logs, algoritmo Alpha, redes de Petri y Workflow Nets.">
+  <title>PetriLab Learning Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="PetriLab, inicio"><span class="brand-symbol"><i></i><b></b><i></i></span><span>Petri<strong>Lab</strong></span><small>Learning Studio</small></a>
+    <div class="topbar-progress"><span>Ruta de aprendizaje</span><div><i class="done"></i><i class="active"></i><i></i><i></i></div><strong>Alpha · 2/4</strong></div>
+    <div class="local-badge"><span></span> Datos locales</div>
+  </header>
+  <main id="top">
+    <section class="learning-hero"><div><p class="eyebrow">Laboratorio de minería de procesos</p><h1>Entiende el proceso.<br><em>Construye la evidencia.</em></h1></div><p class="hero-copy">Del event log a la red, y de la red a su comportamiento. Experimenta, equivócate y comprueba cada decisión.</p></section>
+    <section class="concept-map" aria-label="Mapa conceptual">
+      <article><span>01</span><div><small>Observa</small><strong>Event log</strong></div><b>⟨a,b,c⟩</b></article><i>→</i>
+      <article><span>02</span><div><small>Descubre</small><strong>Algoritmo Alpha</strong></div><b>α(L)</b></article><i>→</i>
+      <article><span>03</span><div><small>Modela</small><strong>Petri Net</strong></div><b>○→▯</b></article><i>→</i>
+      <article><span>04</span><div><small>Comprueba</small><strong>Workflow Net</strong></div><b>✓</b></article>
+    </section>
+    <section class="studio" aria-label="Laboratorio interactivo">
+      <nav class="mode-tabs" aria-label="Modos del laboratorio">
+        <button class="active" data-mode="discover"><span>01</span> Descubrir <small>Log → Alpha</small></button>
+        <button data-mode="build"><span>02</span> Construir <small>Editor manual</small></button>
+        <button data-mode="check"><span>03</span> Comprobar <small>Petri + WF-net</small></button>
+        <button data-mode="simulate"><span>04</span> Simular <small>Tokens → traza</small></button>
+      </nav>
+      <div class="studio-grid">
+        <aside class="control-rail">
+          <section class="rail-panel" data-panel="discover">
+            <div class="panel-title"><span>Entrada</span><h2>Event log</h2></div><label for="event-log">Una variante por línea</label>
+            <div class="log-editor"><div><span>event.log</span><span id="log-case-count">6 casos</span></div><textarea id="event-log" spellcheck="false"><a,b,c,d>^3
+<a,c,b,d>^2
+<a,e,d></textarea></div>
+            <p class="hint"><code>&lt;a,b,c&gt;^3</code> significa tres casos con esa secuencia.</p><p class="form-error" id="log-error" role="alert"></p>
+            <button class="primary-action" id="discover-button">Calcular α(L) <b>→</b></button><button class="secondary-action" id="load-alpha-model">Abrir resultado en el editor</button>
+          </section>
+          <section class="rail-panel" data-panel="build" hidden>
+            <div class="panel-title"><span>Herramientas</span><h2>Construye tu red</h2></div><p class="rail-intro">Elige una herramienta y trabaja directamente sobre el lienzo.</p>
+            <div class="tool-grid" id="editor-tools"><button class="active" data-tool="select"><b>↖</b><span>Seleccionar</span></button><button data-tool="place"><b>○</b><span>Lugar</span></button><button data-tool="transition"><b>▯</b><span>Transición</span></button><button data-tool="connect"><b>↗</b><span>Conectar</span></button><button data-tool="delete"><b>×</b><span>Eliminar</span></button></div>
+            <div class="mini-lesson"><b>Regla esencial</b><p>Una Petri Net siempre alterna lugares y transiciones. Nunca conectes dos elementos del mismo tipo.</p></div><button class="secondary-action" id="new-network">Crear red vacía</button>
+          </section>
+          <section class="rail-panel" data-panel="check" hidden>
+            <div class="panel-title"><span>Diagnóstico</span><h2>¿Está bien mi red?</h2></div><p class="rail-intro">Comprobamos primero la estructura y después exploramos su comportamiento.</p><button class="primary-action" id="check-network">Analizar red <b>✓</b></button>
+            <div class="legend-list"><span><i class="ok"></i> Condición cumplida</span><span><i class="warn"></i> Requiere atención</span><span><i class="info"></i> Explicación</span></div>
+          </section>
+          <section class="rail-panel" data-panel="simulate" hidden>
+            <div class="panel-title"><span>Ejecución</span><h2>Juega con tokens</h2></div><p class="rail-intro">Las transiciones verdes están habilitadas. Haz clic para dispararlas.</p>
+            <div class="current-trace"><small>Traza en curso</small><code id="current-trace">⟨ ⟩</code></div><button class="primary-action" id="save-trace">Añadir traza al log <b>+</b></button><button class="secondary-action" id="reset-simulation">Reiniciar marcado</button>
+          </section>
+        </aside>
+        <section class="stage">
+          <div id="alpha-stage"><header class="stage-header"><div><small>Lección guiada</small><h2>Algoritmo Alpha, paso a paso</h2></div><div class="lesson-status"><span id="alpha-progress">Paso 1 de 8</span><i><b id="alpha-progress-bar"></b></i></div></header><nav class="alpha-steps" id="alpha-steps" aria-label="Pasos del algoritmo Alpha"></nav><article class="alpha-content" id="alpha-step-content"></article></div>
+          <div id="editor-stage" hidden><header class="stage-header"><div><small id="editor-kicker">Lienzo de trabajo</small><h2 id="editor-title">Red del estudiante</h2></div><div class="canvas-stats" id="canvas-stats">0 lugares · 0 transiciones · 0 arcos</div></header><div class="manual-canvas" id="manual-canvas"></div><footer class="canvas-help"><span>Arrastra para mover</span><span id="canvas-message">Selecciona una herramienta para comenzar</span></footer></div>
+        </section>
+        <aside class="coach-panel">
+          <div class="coach-heading"><span class="coach-dot"></span><div><small>Guía activa</small><h2 id="coach-title">Qué aprenderás</h2></div></div><div id="coach-content"></div>
+          <section class="node-inspector" id="node-inspector" hidden><div class="inspector-title"><small>Elemento seleccionado</small><strong id="selected-type">Lugar</strong></div><label>Etiqueta<input id="selected-label" type="text"></label><label id="token-field">Tokens iniciales<input id="selected-tokens" type="number" min="0" max="99"></label></section>
+          <section class="evidence-panel" id="evidence-panel" hidden></section>
+        </aside>
+      </div>
+    </section>
+    <section class="curriculum"><div><p class="eyebrow">Fundamentos conectados</p><h2>No memorices símbolos.<br>Comprende lo que representan.</h2></div><div class="curriculum-grid"><article><span>LOG</span><h3>Event logs</h3><p>Casos, actividades, variantes y frecuencias: la evidencia observable del proceso.</p></article><article><span>α</span><h3>Descubrimiento</h3><p>Sucesión directa, causalidad, paralelismo, elección y lugares maximales.</p></article><article><span>PN</span><h3>Petri Nets</h3><p>Lugares, transiciones, arcos, tokens, habilitación y disparo.</p></article><article><span>WF</span><h3>Workflow Nets</h3><p>Inicio y fin únicos, conectividad, terminación correcta y ausencia de trabajo muerto.</p></article></div></section>
+  </main>
+  <footer class="site-footer"><strong>PetriLab Learning Studio</strong><span>Aprender haciendo · Todo ocurre en tu navegador</span><span>v0.2</span></footer>
+  <script type="module" src="./assets/app.js"></script>
+</body></html>
