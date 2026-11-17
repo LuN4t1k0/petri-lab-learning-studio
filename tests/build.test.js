@@ -19,4 +19,11 @@ test('el build publica los módulos del navegador en dist/assets', async () => {
   assert.match(app, /Cómo se obtiene/);
   assert.match(styles, /\.direct-evidence/);
   assert.match(html, /href="\.\/learning\.css"/);
+  assert.match(app, /lesson-help/);
+  assert.match(app, /Error frecuente/);
+  assert.match(app, /alpha-glossary/);
+  assert.match(app, /network-origin/);
+  assert.match(styles, /\.lesson-help/);
+  const renderer = await readFile('dist/assets/ui/svg-renderer.js', 'utf8');
+  assert.match(renderer, /onNodeSelect/);
 });

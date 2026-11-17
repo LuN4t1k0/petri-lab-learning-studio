@@ -222,10 +222,148 @@
   font: 8px var(--mono);
 }
 
+.lesson-help {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: -8px 0 24px;
+}
+
+.lesson-help article {
+  min-height: 92px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: white;
+}
+
+.lesson-help article:first-child { border-top: 4px solid var(--acid-dark); }
+.lesson-help article:nth-child(2) { border-top: 4px solid #63959a; }
+.lesson-help article:nth-child(3) { border-top: 4px solid var(--orange); }
+.lesson-help article.common-mistake { border-top: 4px solid var(--red); background: #fff7f3; }
+.lesson-help small {
+  color: var(--muted);
+  font: 8px var(--mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.lesson-help p {
+  margin: 7px 0 0;
+  color: var(--ink);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.alpha-glossary {
+  margin-top: 22px;
+  border: 1px solid var(--ink);
+  background: white;
+}
+.alpha-glossary > summary {
+  padding: 12px 15px;
+  background: #edf1e7;
+  cursor: pointer;
+  font: 10px var(--mono);
+  font-weight: 500;
+}
+.alpha-glossary > div {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+}
+.alpha-glossary article {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 10px;
+  padding: 11px 14px;
+  border-top: 1px solid var(--line);
+}
+.alpha-glossary article:nth-child(odd) { border-right: 1px solid var(--line); }
+.alpha-glossary code { color: #1d6269; font: 12px var(--mono); }
+.alpha-glossary p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
+
+.relation-detail strong { display: block; color: var(--acid); font: 14px var(--mono); }
+.relation-detail p { margin: 6px 0 9px; }
+.relation-proof { display: flex; flex-wrap: wrap; gap: 6px; }
+.relation-proof span { padding: 5px 7px; border: 1px solid #496064; }
+.relation-proof .proof-present { color: #eaf7c7; }
+.relation-proof .proof-missing { color: #ffb99f; }
+
+.candidate-explanations,
+.origin-list {
+  display: grid;
+  gap: 8px;
+}
+.candidate-help,
+.origin-list details,
+.discarded-list details {
+  border: 1px solid var(--line);
+  background: white;
+}
+.candidate-help.maximal { border-color: var(--ink); box-shadow: inset 4px 0 0 var(--acid-dark); }
+.candidate-help summary {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style-position: outside;
+  font: 12px var(--mono);
+}
+.candidate-help summary > span { padding: 7px; background: #edf0e8; text-align: center; }
+.candidate-help summary > b { color: var(--orange); }
+.candidate-help summary > em { color: #1d6269; font: normal 8px var(--mono); }
+.candidate-help > div { padding: 0 16px 14px; }
+.candidate-help p { margin: 7px 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
+
+.discarded-list { margin-top: 22px; }
+.discarded-list details summary,
+.origin-list details summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  cursor: pointer;
+}
+.discarded-list summary span { color: var(--red); font: 8px var(--mono); text-transform: uppercase; }
+.origin-list summary span { color: #1d6269; font: 8px var(--mono); text-transform: uppercase; }
+.discarded-list details p,
+.origin-list details p {
+  margin: 0;
+  padding: 0 14px 13px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.55;
+}
+.discarded-list details code,
+.origin-list details code { font: 10px var(--mono); }
+.flow-origins { grid-template-columns: 1fr 1fr; }
+
+.network-origin {
+  min-height: 64px;
+  margin-top: 9px;
+  padding: 12px 15px;
+  border-left: 4px solid var(--acid-dark);
+  background: #172e30;
+  color: white;
+}
+.network-origin strong { color: var(--acid); font: 12px var(--mono); }
+.network-origin p { margin: 5px 0 0; color: #d5dfdc; font-size: 9px; line-height: 1.5; }
+.alpha-model-canvas .petri-node[role="button"] { cursor: pointer; }
+.alpha-model-canvas .petri-node[role="button"]:focus .place-shape,
+.alpha-model-canvas .petri-node[role="button"]:focus .transition-shape { stroke: var(--orange); stroke-width: 5; outline: none; }
+
 @media (max-width: 850px) {
   .direct-evidence,
   .rule-grid,
   .relation-groups,
-  .derived-sets { grid-template-columns: 1fr; }
+  .derived-sets,
+  .lesson-help,
+  .flow-origins,
+  .alpha-glossary > div { grid-template-columns: 1fr; }
+  .alpha-glossary article:nth-child(odd) { border-right: 0; }
+  .candidate-help summary { grid-template-columns: 1fr auto 1fr; }
+  .candidate-help summary > em { grid-column: 1 / -1; }
 }
 

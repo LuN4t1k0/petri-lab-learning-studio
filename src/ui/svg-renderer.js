@@ -28,7 +28,7 @@ function downloadBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function renderPetriNet(container, model) {
+export function renderPetriNet(container, model, { onNodeSelect } = {}) {
   container.replaceChildren();
   const width = Math.max(940, container.clientWidth || 940);
   const height = Math.max(560, Math.min(820, model.nodes.length * 24));
@@ -89,6 +89,8 @@ export function renderPetriNet(container, model) {
     const group = svgElement('g', {
       class: `petri-node petri-node--${node.type}${node.silent ? ' is-silent' : ''}`,
       transform: `translate(${position.x} ${position.y})`, tabindex: 0,
+      role: onNodeSelect ? 'button' : 'group',
+      'data-node-id': node.id,
       'aria-label': node.type === 'place' ? `Lugar ${node.label || node.id}` : `Transición ${node.label || 'silenciosa'}`,
     });
     const title = svgElement('title');
@@ -128,6 +130,12 @@ export function renderPetriNet(container, model) {
       updateArcs();
     });
     group.addEventListener('pointerup', () => { draggingNode = false; });
+    group.addEventListener('click', () => onNodeSelect?.(node));
+    group.addEventListener('keydown', (event) => {
+      if (!onNodeSelect || !['Enter', ' '].includes(event.key)) return;
+      event.preventDefault();
+      onNodeSelect(node);
+    });
   }
   updateArcs();
 

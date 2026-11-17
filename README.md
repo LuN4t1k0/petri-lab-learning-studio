@@ -27,6 +27,8 @@ La lección de descubrimiento avanza en orden y no adelanta resultados:
 7. arcos `FL`;
 8. Workflow Net gráfica, editable, comprobable y simulable.
 
+Cada paso incluye objetivo, regla en lenguaje cotidiano, un ejemplo derivado del log actual y un error frecuente. Los candidatos de `XL`, descartes de `YL`, lugares y arcos pueden desplegar su justificación. En la matriz y en la red final también se puede seleccionar un elemento para rastrear su origen.
+
 ## Ejecutar localmente
 
 Requiere Node.js 20 o superior y Python 3 para el servidor estático.
