@@ -56,3 +56,32 @@ test('ordena la lección desde event log hasta Workflow Net', () => {
   );
 });
 
+test('explica por qué un candidato pertenece a XL', () => {
+  const lesson = explainAlpha(parseTraceLanguage(L5));
+  const candidate = lesson.candidateExplanations.find((item) => item.key === '{a,d}→{b}');
+
+  assert.deepEqual(candidate.causalRelations, ['a → b', 'd → b']);
+  assert.deepEqual(candidate.inputUnrelated, ['a # d']);
+  assert.deepEqual(candidate.outputUnrelated, []);
+});
+
+test('explica qué maximal contiene a cada candidato descartado de YL', () => {
+  const lesson = explainAlpha(parseTraceLanguage(L5));
+  const discarded = lesson.maximality.find((item) => item.key === '{a}→{b}');
+
+  assert.equal(discarded.isMaximal, false);
+  assert.deepEqual(discarded.containedBy, ['{a,d}→{b}']);
+});
+
+test('vincula lugares y arcos con la regla que los origina', () => {
+  const lesson = explainAlpha(parseTraceLanguage(L5));
+  const place = lesson.placeExplanations.find((item) => item.place === 'p({a,d}→{b})');
+  const initialArc = lesson.flowExplanations.find((item) => item.arc === 'i_L→a');
+  const internalArc = lesson.flowExplanations.find((item) => item.arc === 'a→p({a,d}→{b})');
+
+  assert.equal(place.kind, 'derived');
+  assert.equal(place.pairKey, '{a,d}→{b}');
+  assert.equal(initialArc.rule, 'a ∈ TI');
+  assert.equal(internalArc.rule, 'a ∈ A de {a,d}→{b}');
+});
+

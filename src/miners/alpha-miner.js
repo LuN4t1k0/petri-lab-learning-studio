@@ -164,6 +164,39 @@ function explainDirectlyFollows(log) {
   return [...relations.values()].sort((left, right) => left.key.localeCompare(right.key, 'es'));
 }
 
+function unrelatedWithin(values) {
+  return values.flatMap((left, index) => values.slice(index + 1).map((right) => `${left} # ${right}`));
+}
+
+function explainCandidates(allCandidates, maximalCandidates) {
+  const maximalSignatures = new Set(maximalCandidates.map(candidateSignature));
+  const candidateExplanations = allCandidates.map((candidate) => {
+    const formatted = formatCandidate(candidate);
+    return {
+      ...formatted,
+      causalRelations: formatted.inputs.flatMap((left) =>
+        formatted.outputs.map((right) => `${left} → ${right}`)),
+      inputUnrelated: unrelatedWithin(formatted.inputs),
+      outputUnrelated: unrelatedWithin(formatted.outputs),
+    };
+  }).sort((left, right) => left.key.localeCompare(right.key));
+  const maximality = allCandidates.map((candidate) => {
+    const formatted = formatCandidate(candidate);
+    const containedBy = maximalCandidates.filter((maximal) =>
+      candidateSignature(maximal) !== candidateSignature(candidate)
+      && setIsSubset(candidate.inputs, maximal.inputs)
+      && setIsSubset(candidate.outputs, maximal.outputs))
+      .map((maximal) => formatCandidate(maximal).key)
+      .sort((left, right) => left.localeCompare(right));
+    return {
+      key: formatted.key,
+      isMaximal: maximalSignatures.has(candidateSignature(candidate)),
+      containedBy,
+    };
+  }).sort((left, right) => left.key.localeCompare(right.key));
+  return { candidateExplanations, maximality };
+}
+
 export function explainAlpha(log) {
   const analysis = analyzeAlphaRelations(log);
   const footprint = Object.fromEntries(log.activities.map((left) => [left, Object.fromEntries(
@@ -195,6 +228,46 @@ export function explainAlpha(log) {
     parallel: analysis.parallelPairs.map(([left, right]) => `${left} ∥ ${right}`),
     unrelated: analysis.choicePairs.map(([left, right]) => `${left} # ${right}`),
   };
+  const { candidateExplanations, maximality } = explainCandidates(
+    analysis.candidates.all,
+    analysis.candidates.maximal,
+  );
+  const placeExplanations = [
+    { place: 'i_L', kind: 'initial', rule: `Lugar inicial conectado a TI = {${sorted(analysis.starts).join(', ')}}.` },
+    ...YL.map((pair) => ({
+      place: `p(${pair.key})`,
+      kind: 'derived',
+      pairKey: pair.key,
+      rule: `Se crea un lugar porque ${pair.key} pertenece a YL.`,
+    })),
+    { place: 'o_L', kind: 'final', rule: `Lugar final conectado desde TO = {${sorted(analysis.ends).join(', ')}}.` },
+  ];
+  const flowExplanations = [
+    ...sorted(analysis.starts).map((activity) => ({
+      arc: `i_L→${activity}`,
+      kind: 'initial',
+      rule: `${activity} ∈ TI`,
+    })),
+    ...YL.flatMap((pair) => [
+      ...pair.inputs.map((activity) => ({
+        arc: `${activity}→p(${pair.key})`,
+        kind: 'input',
+        pairKey: pair.key,
+        rule: `${activity} ∈ A de ${pair.key}`,
+      })),
+      ...pair.outputs.map((activity) => ({
+        arc: `p(${pair.key})→${activity}`,
+        kind: 'output',
+        pairKey: pair.key,
+        rule: `${activity} ∈ B de ${pair.key}`,
+      })),
+    ]),
+    ...sorted(analysis.ends).map((activity) => ({
+      arc: `${activity}→o_L`,
+      kind: 'final',
+      rule: `${activity} ∈ TO`,
+    })),
+  ];
   const result = {
     totalCases: log.totalCases,
     variants,
@@ -206,8 +279,12 @@ export function explainAlpha(log) {
     footprint,
     XL,
     YL,
+    candidateExplanations,
+    maximality,
     PL,
     FL,
+    placeExplanations,
+    flowExplanations,
     model: mineAlpha(log),
   };
   result.steps = [
