@@ -27,9 +27,17 @@ test('el build publica los módulos del navegador en dist/assets', async () => {
   assert.match(app, /Limitaciones de Alpha clásico/);
   assert.match(app, /Descubrir el proceso, no copiar las trazas/);
   assert.match(app, /Correspondencia con la definición formal/);
+  assert.match(app, /Comprobación del resultado/);
+  assert.match(app, /Equivalencia gráfica/);
+  assert.match(app, /Cada lugar derivado corresponde a un elemento de Y/);
   assert.match(styles, /\.lesson-help/);
   assert.match(styles, /\.conformance-grid/);
   assert.match(styles, /\.limitation-grid/);
+  assert.match(styles, /\.canonical-checks/);
+  assert.match(styles, /\.network-equivalence/);
   const renderer = await readFile('dist/assets/ui/svg-renderer.js', 'utf8');
   assert.match(renderer, /onNodeSelect/);
+  assert.match(renderer, /arc--spine/);
+  assert.match(renderer, /arc--branch/);
+  assert.match(renderer, /arc--return/);
 });

@@ -42,6 +42,9 @@ export function renderPetriNet(container, model, { onNodeSelect } = {}) {
   const embeddedStyles = svgElement('style');
   embeddedStyles.textContent = `
     .petri-arc{fill:none;stroke:#496064;stroke-width:1.7;color:#496064}
+    .arc--spine{stroke:#152a2c;stroke-width:2.4;color:#152a2c}
+    .arc--branch{stroke:#3f7f84;stroke-width:2;color:#3f7f84}
+    .arc--return{stroke:#d36b42;stroke-width:2.2;color:#d36b42}
     .place-shape{fill:#fbfaf5;stroke:#152a2c;stroke-width:2.2}
     .transition-shape{fill:#152a2c;stroke:#152a2c;stroke-width:2}
     .is-silent .transition-shape{fill:#d9ded5;stroke-dasharray:3 2}
@@ -66,7 +69,16 @@ export function renderPetriNet(container, model, { onNodeSelect } = {}) {
 
   const arcElements = new Map();
   for (const arc of model.arcs) {
-    const path = svgElement('path', { class: 'petri-arc', 'marker-end': 'url(#arrowhead)' });
+    const sourceRole = positions.get(arc.source)?.role;
+    const targetRole = positions.get(arc.target)?.role;
+    const arcRole = sourceRole === 'spine' && targetRole === 'spine'
+      ? 'spine'
+      : sourceRole === 'return' || targetRole === 'return' ? 'return' : 'branch';
+    const path = svgElement('path', {
+      class: `petri-arc arc--${arcRole}`,
+      'data-arc-role': arcRole,
+      'marker-end': 'url(#arrowhead)',
+    });
     arcLayer.append(path);
     arcElements.set(arc.id, path);
   }
@@ -77,10 +89,23 @@ export function renderPetriNet(container, model, { onNodeSelect } = {}) {
       const targetPosition = positions.get(arc.target);
       const start = nodeBoundary(sourcePosition, targetPosition, nodesById.get(arc.source));
       const end = nodeBoundary(targetPosition, sourcePosition, nodesById.get(arc.target));
-      const bend = Math.max(34, Math.abs(end.x - start.x) * 0.44);
-      arcElements.get(arc.id).setAttribute(
-        'd', `M ${start.x} ${start.y} C ${start.x + bend} ${start.y}, ${end.x - bend} ${end.y}, ${end.x} ${end.y}`,
-      );
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      let controlOne;
+      let controlTwo;
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        const direction = Math.sign(dx) || 1;
+        const bend = Math.max(34, Math.abs(dx) * 0.44);
+        controlOne = { x: start.x + direction * bend, y: start.y };
+        controlTwo = { x: end.x - direction * bend, y: end.y };
+      } else {
+        const direction = Math.sign(dy) || 1;
+        const bend = Math.max(34, Math.abs(dy) * 0.44);
+        controlOne = { x: start.x, y: start.y + direction * bend };
+        controlTwo = { x: end.x, y: end.y - direction * bend };
+      }
+      arcElements.get(arc.id).setAttribute('d',
+        `M ${start.x} ${start.y} C ${controlOne.x} ${controlOne.y}, ${controlTwo.x} ${controlTwo.y}, ${end.x} ${end.y}`);
     }
   }
 
