@@ -31,6 +31,12 @@ Cada paso incluye objetivo, regla en lenguaje cotidiano, un ejemplo derivado del
 
 El cierre relaciona el resultado con las cuatro dimensiones de conformidad (fitness, precision, generalization y simplicity), explica que se descubre el proceso en vez de memorizar trazas y advierte las limitaciones de Alpha clásico. La herramienta detecta y señala en el log bucles cortos de longitud 1 y 2, que requieren especial cuidado porque Alpha clásico no los representa correctamente.
 
+## Referencia académica y equivalencia gráfica
+
+El ejemplo L5 de `07.01 - Alpha Algorithm.pdf` (páginas 32–38) funciona como caso de aceptación: la suite comprueba exactamente sus 13 relaciones Directly Follows, matriz footprint, 9 candidatos `XL`, 5 maximales `YL`, 7 lugares y 14 arcos.
+
+El layout usa una ruta principal horizontal y coloca alternativas o retornos en carriles separados. La geometría puede diferir entre dibujos sin cambiar la red: dos representaciones son equivalentes cuando preservan los mismos lugares, transiciones, arcos y direcciones. La pantalla final hace visibles estas comprobaciones y relaciona cada lugar `p(A,B)` con el elemento de `YL` que lo origina.
+
 ## Ejecutar localmente
 
 Requiere Node.js 20 o superior y Python 3 para el servidor estático.
