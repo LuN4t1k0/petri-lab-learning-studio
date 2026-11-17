@@ -3,12 +3,9 @@ import assert from 'node:assert/strict';
 
 import { parseTraceLanguage } from '../src/core/trace-parser.js';
 import { explainAlpha } from '../src/miners/alpha-miner.js';
+import { L5_LOG, L5_REFERENCE } from './fixtures/alpha-l5-reference.js';
 
-const L5 = `<a,b,e,f>^2
-<a,b,e,c,d,b,f>^3
-<a,b,c,e,d,b,f>^2
-<a,b,c,d,e,b,f>^4
-<a,e,b,c,d,b,f>^3`;
+const L5 = L5_LOG;
 
 test('explica L5 desde sus variantes y frecuencias', () => {
   const lesson = explainAlpha(parseTraceLanguage(L5));
@@ -103,5 +100,38 @@ test('expone las dimensiones conceptuales para evaluar el modelo descubierto', (
   assert.deepEqual(lesson.conformanceDimensions.map((item) => item.key), [
     'fitness', 'precision', 'generalization', 'simplicity',
   ]);
+});
+
+test('coincide exactamente con el ejercicio L5 de las páginas 34 a 38', () => {
+  const lesson = explainAlpha(parseTraceLanguage(L5));
+
+  assert.deepEqual(lesson.directlyFollows.map((relation) => relation.key), L5_REFERENCE.directlyFollows);
+  assert.deepEqual(lesson.relationSets.causality, L5_REFERENCE.causality);
+  assert.deepEqual(lesson.relationSets.parallel, L5_REFERENCE.parallel);
+  assert.deepEqual(lesson.relationSets.unrelated, L5_REFERENCE.unrelated);
+  assert.deepEqual(lesson.footprint, L5_REFERENCE.footprint);
+  assert.deepEqual(lesson.XL.map((candidate) => candidate.key), L5_REFERENCE.XL);
+  assert.deepEqual(lesson.YL.map((candidate) => candidate.key), L5_REFERENCE.YL);
+  assert.deepEqual(lesson.PL, L5_REFERENCE.PL);
+  assert.deepEqual(lesson.FL, L5_REFERENCE.FL);
+});
+
+test('cada arco del modelo L5 corresponde exactamente a un elemento de FL', () => {
+  const lesson = explainAlpha(parseTraceLanguage(L5));
+  const placeByLabel = new Map(lesson.placeExplanations.map((item) => {
+    if (item.kind === 'initial') return ['inicio', item.place];
+    if (item.kind === 'final') return ['fin', item.place];
+    return [item.pairKey.replaceAll('{', '').replaceAll('}', ''), item.place];
+  }));
+  const formalName = new Map(lesson.model.nodes.map((node) => [
+    node.id,
+    node.type === 'transition' ? node.label : placeByLabel.get(node.label),
+  ]));
+  const modelFlow = lesson.model.arcs
+    .map((arc) => `${formalName.get(arc.source)}→${formalName.get(arc.target)}`)
+    .sort();
+
+  assert.equal(modelFlow.includes('undefined→undefined'), false);
+  assert.deepEqual(modelFlow, [...L5_REFERENCE.FL].sort());
 });
 
