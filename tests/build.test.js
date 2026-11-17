@@ -44,3 +44,18 @@ test('el build publica los módulos del navegador en dist/assets', async () => {
   assert.match(renderer, /arc--branch/);
   assert.match(renderer, /arc--return/);
 });
+
+test('presenta PetriLab como una herramienta legible creada para estudiantes', async () => {
+  const html = await readFile('dist/index.html', 'utf8');
+  const styles = `${await readFile('dist/styles.css', 'utf8')}\n${await readFile('dist/learning.css', 'utf8')}`;
+
+  assert.match(html, /Herramienta educativa para estudiantes/);
+  assert.match(html, /Cristian Venegas/);
+  assert.match(html, /LuN4t!k0/);
+  assert.match(html, /junto a Claude/);
+  assert.match(html, /https:\/\/github\.com\/LuN4t1k0/);
+  assert.doesNotMatch(html, /topbar-progress/);
+  assert.doesNotMatch(html, /local-badge/);
+  assert.match(styles, /\.learning-hero h1 em\s*\{[^}]*color:\s*var\(--ink\)/);
+  assert.match(styles, /\.creator-message/);
+});

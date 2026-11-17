@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Laboratorio interactivo para aprender event logs, algoritmo Alpha, redes de Petri y Workflow Nets.">
-  <title>PetriLab Learning Studio</title>
+  <meta name="description" content="Herramienta educativa para aprender event logs, algoritmo Alpha, redes de Petri y Workflow Nets paso a paso.">
+  <title>PetriLab | Aprende minería de procesos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
@@ -12,11 +12,10 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#top" aria-label="PetriLab, inicio"><span class="brand-symbol"><i></i><b></b><i></i></span><span>Petri<strong>Lab</strong></span><small>Learning Studio</small></a>
-    <div class="topbar-progress"><span>Ruta de aprendizaje</span><div><i class="done"></i><i class="active"></i><i></i><i></i></div><strong>Alpha · 2/4</strong></div>
-    <div class="local-badge"><span></span> Datos locales</div>
+    <a class="topbar-purpose" href="https://github.com/LuN4t1k0" target="_blank" rel="noreferrer">Proyecto educativo · LuN4t!k0 ↗</a>
   </header>
   <main id="top">
-    <section class="learning-hero"><div><p class="eyebrow">Laboratorio de minería de procesos</p><h1>Entiende el proceso.<br><em>Construye la evidencia.</em></h1></div><p class="hero-copy">Del event log a la red, y de la red a su comportamiento. Experimenta, equivócate y comprueba cada decisión.</p></section>
+    <section class="learning-hero"><div><p class="eyebrow">Herramienta educativa para estudiantes</p><h1>Aprende minería de procesos.<br><em>Paso a paso.</em></h1></div><p class="hero-copy">Parte desde un event log, comprende cada decisión del algoritmo Alpha y comprueba tu propia red. Practica, equivócate y vuelve a intentarlo: aquí cada resultado viene con una explicación.</p></section>
     <section class="concept-map" aria-label="Mapa conceptual">
       <article><span>01</span><div><small>Observa</small><strong>Event log</strong></div><b>⟨a,b,c⟩</b></article><i>→</i>
       <article><span>02</span><div><small>Descubre</small><strong>Algoritmo Alpha</strong></div><b>α(L)</b></article><i>→</i>
@@ -69,6 +68,9 @@
     </section>
     <section class="curriculum"><div><p class="eyebrow">Fundamentos conectados</p><h2>No memorices símbolos.<br>Comprende lo que representan.</h2></div><div class="curriculum-grid"><article><span>LOG</span><h3>Event logs</h3><p>Casos, actividades, variantes y frecuencias: la evidencia observable del proceso.</p></article><article><span>α</span><h3>Descubrimiento</h3><p>Sucesión directa, causalidad, paralelismo, elección y lugares maximales.</p></article><article><span>PN</span><h3>Petri Nets</h3><p>Lugares, transiciones, arcos, tokens, habilitación y disparo.</p></article><article><span>WF</span><h3>Workflow Nets</h3><p>Inicio y fin únicos, conectividad, terminación correcta y ausencia de trabajo muerto.</p></article></div></section>
   </main>
-  <footer class="site-footer"><strong>PetriLab Learning Studio</strong><span>Aprender haciendo · Todo ocurre en tu navegador</span><span>v0.2</span></footer>
+  <footer class="site-footer">
+    <div class="creator-message"><strong>Una herramienta hecha para estudiantes.</strong><p>PetriLab fue creada por <b>Cristian Venegas · LuN4t!k0</b>, junto a Claude, como un equipo que quiere ayudarte a practicar, comprobar tus ejercicios y aprender minería de procesos con confianza.</p></div>
+    <a href="https://github.com/LuN4t1k0" target="_blank" rel="noreferrer">Conoce el proyecto en GitHub ↗</a>
+  </footer>
   <script type="module" src="./assets/app.js"></script>
 </body></html>
