@@ -53,7 +53,11 @@ test('presenta PetriLab como una herramienta legible creada para estudiantes', a
   assert.match(html, /Cristian Venegas/);
   assert.match(html, /LuN4t!k0/);
   assert.match(html, /junto a Claude/);
-  assert.match(html, /https:\/\/github\.com\/LuN4t1k0/);
+  assert.equal(
+    (html.match(/https:\/\/github\.com\/LuN4t1k0\/petri-lab-learning-studio/g) ?? []).length,
+    2,
+  );
+  assert.doesNotMatch(html, /href="https:\/\/github\.com\/LuN4t1k0"/);
   assert.doesNotMatch(html, /topbar-progress/);
   assert.doesNotMatch(html, /local-badge/);
   assert.match(styles, /\.learning-hero h1 em\s*\{[^}]*color:\s*var\(--ink\)/);
