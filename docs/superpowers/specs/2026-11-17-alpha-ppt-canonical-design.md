@@ -74,4 +74,3 @@ El paso final incluirá:
 - La rama `e` ocupa el carril opuesto.
 - Ningún event log válido produce coordenadas no finitas o nodos faltantes.
 - La web explica que la geometría puede variar sin cambiar la red.
-

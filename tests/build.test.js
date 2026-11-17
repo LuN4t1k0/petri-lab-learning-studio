@@ -30,11 +30,14 @@ test('el build publica los módulos del navegador en dist/assets', async () => {
   assert.match(app, /Comprobación del resultado/);
   assert.match(app, /Equivalencia gráfica/);
   assert.match(app, /Cada lugar derivado corresponde a un elemento de Y/);
+  assert.match(app, /Ruta principal/);
+  assert.match(app, /Retorno o ciclo/);
   assert.match(styles, /\.lesson-help/);
   assert.match(styles, /\.conformance-grid/);
   assert.match(styles, /\.limitation-grid/);
   assert.match(styles, /\.canonical-checks/);
   assert.match(styles, /\.network-equivalence/);
+  assert.match(styles, /\.network-lane-legend/);
   const renderer = await readFile('dist/assets/ui/svg-renderer.js', 'utf8');
   assert.match(renderer, /onNodeSelect/);
   assert.match(renderer, /arc--spine/);

@@ -271,31 +271,30 @@ function conformanceAndLimitations() {
 }
 
 function canonicalResultChecks() {
-  const transitions = lesson.model.nodes.filter((node) => node.type === 'transition');
-  const places = lesson.model.nodes.filter((node) => node.type === 'place');
-  const derivedPlaces = lesson.placeExplanations.filter((item) => item.kind === 'derived');
+  const verification = lesson.constructionVerification;
+  const mismatch = (result) => result.passed ? '' : `<small>Faltan: ${result.missing.map(escapeHtml).join(', ') || 'ninguno'}. Sobran: ${result.unexpected.map(escapeHtml).join(', ') || 'ninguno'}.</small>`;
   const checks = [
     {
-      passed: transitions.length === lesson.TL.length,
+      ...verification.transitions,
       title: 'Transiciones verificadas',
-      detail: `${transitions.length} transiciones = ${lesson.TL.length} actividades de Tₗ.`,
+      detail: `${verification.transitions.actual.length} transiciones coinciden exactamente con Tₗ.`,
     },
     {
-      passed: places.length === lesson.PL.length && derivedPlaces.length === lesson.YL.length,
+      ...verification.places,
       title: 'Lugares verificados',
-      detail: `${places.length} lugares = inicio + ${lesson.YL.length} pares maximales + fin.`,
+      detail: `${verification.places.actual.length} lugares coinciden exactamente con Pₗ.`,
     },
     {
-      passed: lesson.model.arcs.length === lesson.FL.length,
+      ...verification.flows,
       title: 'Arcos verificados',
-      detail: `${lesson.model.arcs.length} arcos del dibujo = ${lesson.FL.length} elementos de Fₗ.`,
+      detail: `${verification.flows.actual.length} arcos y direcciones coinciden exactamente con Fₗ.`,
     },
   ];
   return `<section class="canonical-result">
     <h4>Comprobación del resultado</h4>
     <p class="section-intro">El dibujo no se valida por su forma geométrica: se valida comprobando que conserva exactamente transiciones, lugares y arcos.</p>
-    <div class="canonical-checks">${checks.map((check) => `<article class="${check.passed ? 'passed' : 'failed'}"><span>${check.passed ? '✓' : '!'}</span><div><strong>${check.title}</strong><p>${check.detail}</p></div></article>`).join('')}</div>
-    <div class="network-equivalence"><strong>Equivalencia gráfica</strong><p>Dos redes pueden verse distintas por la posición de sus nodos y seguir siendo la misma red si mantienen los mismos lugares, transiciones, arcos y direcciones. Aquí la ruta principal aparece al centro, los retornos arriba y las alternativas abajo para facilitar la lectura.</p></div>
+    <div class="canonical-checks">${checks.map((check) => `<article class="${check.passed ? 'passed' : 'failed'}"><span>${check.passed ? '✓' : '!'}</span><div><strong>${check.title}</strong><p>${check.detail}</p>${mismatch(check)}</div></article>`).join('')}</div>
+    <div class="network-equivalence"><strong>Equivalencia gráfica</strong><p>Dos redes pueden verse distintas por la posición de sus nodos y seguir siendo la misma red si mantienen exactamente los mismos lugares, transiciones, arcos y direcciones. La ruta principal queda al centro y los retornos o alternativas ocupan carriles separados para facilitar la lectura.</p></div>
     <h4>Del conjunto Y<sub>L</sub> al dibujo</h4>
     <p class="section-intro">Cada lugar derivado corresponde a un elemento de Y<sub>L</sub>. Las actividades de A entran al lugar y el lugar sale hacia las actividades de B.</p>
     <div class="canonical-place-map">${lesson.YL.map((pair) => `<article><code>p(${escapeHtml(pair.key)})</code><div><span>Entradas A: {${pair.inputs.map(escapeHtml).join(', ')}}</span><span>Salidas B: {${pair.outputs.map(escapeHtml).join(', ')}}</span></div></article>`).join('')}</div>
@@ -332,7 +331,7 @@ function renderAlphaStep() {
   if (step.key === 'YL') body = `<div class="comparison-note"><strong>${lesson.XL.length}</strong><span>candidatos X<sub>L</sub></span><b>→</b><strong>${lesson.YL.length}</strong><span>maximales Y<sub>L</sub></span></div><h4>Elementos maximales</h4>${candidateCards(step.value, true)}${maximalityExplanation()}`;
   if (step.key === 'PL') body = `<div class="formula-list">${step.value.map((value) => `<code>${value}</code>`).join('')}</div><h4>Procedencia de cada lugar</h4>${placeCards()}`;
   if (step.key === 'FL') body = `<div class="formula-list">${step.value.map((value) => `<code>${value}</code>`).join('')}</div><h4>Regla que produce cada arco</h4>${flowCards()}`;
-  if (step.key === 'alpha') body = `<div class="network-summary"><span>${lesson.model.nodes.filter((node) => node.type === 'place').length} lugares</span><span>${lesson.model.nodes.filter((node) => node.type === 'transition').length} transiciones</span><span>${lesson.model.arcs.length} arcos</span></div><div class="alpha-model-canvas" id="alpha-model-canvas"></div><div class="network-origin" id="network-origin"><strong>Selecciona un elemento de la red</strong><p>Verás qué actividad, par maximal o regla lo originó.</p></div>${canonicalResultChecks()}${conformanceAndLimitations()}`;
+  if (step.key === 'alpha') body = `<div class="network-summary"><span>${lesson.model.nodes.filter((node) => node.type === 'place').length} lugares</span><span>${lesson.model.nodes.filter((node) => node.type === 'transition').length} transiciones</span><span>${lesson.model.arcs.length} arcos</span></div><div class="network-lane-legend"><span class="spine">Ruta principal</span><span class="branch">Alternativa</span><span class="return">Retorno o ciclo</span></div><div class="alpha-model-canvas" id="alpha-model-canvas"></div><div class="network-origin" id="network-origin"><strong>Selecciona un elemento de la red</strong><p>Verás qué actividad, par maximal o regla lo originó.</p></div>${canonicalResultChecks()}${conformanceAndLimitations()}`;
   const notation = { log: 'L', direct: '>ₗ', footprint: '→ ∥ #', XL: 'Xₗ', YL: 'Yₗ', PL: 'Pₗ', FL: 'Fₗ', alpha: 'WF' };
   $('#alpha-step-content').innerHTML = `<header><span>${alphaStep + 1}</span><div><small>${notation[step.key]}</small><h3>${title}</h3><p>${description}</p></div></header>${stepHelp(step.key)}${body}${alphaGlossary()}<footer><button id="prev-alpha" ${alphaStep === 0 ? 'disabled' : ''}>← Anterior</button><button id="next-alpha" ${alphaStep === 7 ? 'disabled' : ''}>Siguiente paso →</button></footer>`;
   $('#prev-alpha').addEventListener('click', () => { alphaStep -= 1; renderAlphaStep(); });

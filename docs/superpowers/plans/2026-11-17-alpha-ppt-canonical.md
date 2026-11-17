@@ -92,4 +92,3 @@
 - [ ] Integrar en `main`, publicar GitHub Pages y esperar el workflow.
 - [ ] Comparar visualmente L5 con la página 38 y probar un segundo log con elección.
 - [ ] Verificar en la web pública que los checks y la selección de nodos funcionan.
-

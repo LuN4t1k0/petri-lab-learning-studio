@@ -220,9 +220,30 @@ export function layoutPetriNet(model, width = 1200, height = 720) {
       return left.ordered.join('|').localeCompare(right.ordered.join('|'));
     });
   let returnLane = 0;
-  let branchLane = 0;
-  for (const item of described) {
-    item.lane = item.role === 'return' ? -(++returnLane) : ++branchLane;
+  const occupiedLanes = new Set();
+  for (const item of described.filter((component) => component.role === 'return')) {
+    item.lane = -(++returnLane);
+    occupiedLanes.add(item.lane);
+  }
+  let branchOffset = 1;
+  let branchDirection = 1;
+  for (const item of described.filter((component) => component.role === 'branch')) {
+    let candidate = branchOffset * branchDirection;
+    while (occupiedLanes.has(candidate)) {
+      if (branchDirection > 0) branchDirection = -1;
+      else {
+        branchDirection = 1;
+        branchOffset += 1;
+      }
+      candidate = branchOffset * branchDirection;
+    }
+    item.lane = candidate;
+    occupiedLanes.add(candidate);
+    if (branchDirection > 0) branchDirection = -1;
+    else {
+      branchDirection = 1;
+      branchOffset += 1;
+    }
   }
   const maximumLane = Math.max(1, ...described.map((item) => Math.abs(item.lane)));
   const availableHalfHeight = Math.max(80, centerY - 72);

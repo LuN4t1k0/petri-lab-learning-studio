@@ -44,6 +44,19 @@ test('maneja una red vacía y una red extensa sin valores inválidos', () => {
   assert.equal([...positions.values()].every(({ x, y }) => Number.isFinite(x) && Number.isFinite(y)), true);
 });
 
+test('distribuye muchas alternativas en ambos lados sin superponer sus carriles', () => {
+  const traces = Array.from({ length: 24 }, (_, index) => `<a,x${index},z>`).join('\n');
+  const model = minePrefix(parseTraceLanguage(traces));
+  const positions = layoutPetriNet(model, 1200, 1600);
+  const branchYs = [...new Set([...positions.values()]
+    .filter((position) => position.role === 'branch')
+    .map((position) => position.y))].sort((left, right) => left - right);
+
+  assert.ok(branchYs.some((y) => y < 800));
+  assert.ok(branchYs.some((y) => y > 800));
+  assert.equal(branchYs.every((y, index) => index === 0 || y - branchYs[index - 1] >= 52), true);
+});
+
 test('calcula los extremos del arco sobre el borde de cada nodo', () => {
   assert.deepEqual(
     nodeBoundary({ x: 100, y: 100 }, { x: 200, y: 100 }, { type: 'place' }),

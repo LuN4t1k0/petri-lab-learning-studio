@@ -253,6 +253,51 @@ function explainCandidates(allCandidates, maximalCandidates) {
   return { candidateExplanations, maximality };
 }
 
+function compareMultiset(expectedValues, actualValues) {
+  const expected = [...expectedValues].sort();
+  const actual = [...actualValues].sort();
+  const remainingExpected = new Map();
+  const remainingActual = new Map();
+  for (const value of expected) remainingExpected.set(value, (remainingExpected.get(value) ?? 0) + 1);
+  for (const value of actual) remainingActual.set(value, (remainingActual.get(value) ?? 0) + 1);
+  const missing = [];
+  const unexpected = [];
+  for (const [value, count] of remainingExpected) {
+    const difference = count - (remainingActual.get(value) ?? 0);
+    for (let index = 0; index < difference; index += 1) missing.push(value);
+  }
+  for (const [value, count] of remainingActual) {
+    const difference = count - (remainingExpected.get(value) ?? 0);
+    for (let index = 0; index < difference; index += 1) unexpected.push(value);
+  }
+  return { passed: missing.length === 0 && unexpected.length === 0, expected, actual, missing, unexpected };
+}
+
+export function verifyAlphaConstruction(lesson, model = lesson.model) {
+  const formalPlaceByLabel = new Map(lesson.placeExplanations.map((item) => {
+    if (item.kind === 'initial') return ['inicio', item.place];
+    if (item.kind === 'final') return ['fin', item.place];
+    return [item.pairKey.replaceAll('{', '').replaceAll('}', ''), item.place];
+  }));
+  const formalNameById = new Map(model.nodes.map((node) => [
+    node.id,
+    node.type === 'transition' ? node.label : formalPlaceByLabel.get(node.label) ?? `?${node.id}`,
+  ]));
+  const transitions = model.nodes
+    .filter((node) => node.type === 'transition')
+    .map((node) => node.label);
+  const places = model.nodes
+    .filter((node) => node.type === 'place')
+    .map((node) => formalPlaceByLabel.get(node.label) ?? `?${node.id}`);
+  const flows = model.arcs.map((arc) =>
+    `${formalNameById.get(arc.source) ?? `?${arc.source}`}→${formalNameById.get(arc.target) ?? `?${arc.target}`}`);
+  return {
+    transitions: compareMultiset(lesson.TL, transitions),
+    places: compareMultiset(lesson.PL, places),
+    flows: compareMultiset(lesson.FL, flows),
+  };
+}
+
 export function explainAlpha(log) {
   const analysis = analyzeAlphaRelations(log);
   const footprint = Object.fromEntries(log.activities.map((left) => [left, Object.fromEntries(
@@ -345,6 +390,7 @@ export function explainAlpha(log) {
     limitations: analyzeShortLoops(log),
     model: mineAlpha(log),
   };
+  result.constructionVerification = verifyAlphaConstruction(result, result.model);
   result.steps = [
     { key: 'log', title: '1. Event log', value: result.variants },
     { key: 'direct', title: '2. Directly Follows', value: result.directlyFollows },

@@ -31,7 +31,7 @@ function downloadBlob(blob, filename) {
 export function renderPetriNet(container, model, { onNodeSelect } = {}) {
   container.replaceChildren();
   const width = Math.max(940, container.clientWidth || 940);
-  const height = Math.max(560, Math.min(820, model.nodes.length * 24));
+  const height = Math.max(560, Math.min(2200, model.nodes.length * 46));
   const positions = layoutPetriNet(model, width, height);
   const nodesById = new Map(model.nodes.map((node) => [node.id, node]));
   const svg = svgElement('svg', {

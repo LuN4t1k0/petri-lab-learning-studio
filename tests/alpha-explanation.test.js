@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { parseTraceLanguage } from '../src/core/trace-parser.js';
-import { explainAlpha } from '../src/miners/alpha-miner.js';
+import { explainAlpha, verifyAlphaConstruction } from '../src/miners/alpha-miner.js';
 import { L5_LOG, L5_REFERENCE } from './fixtures/alpha-l5-reference.js';
 
 const L5 = L5_LOG;
@@ -133,5 +133,26 @@ test('cada arco del modelo L5 corresponde exactamente a un elemento de FL', () =
 
   assert.equal(modelFlow.includes('undefined→undefined'), false);
   assert.deepEqual(modelFlow, [...L5_REFERENCE.FL].sort());
+});
+
+test('expone una verificación exacta de transiciones, lugares y flujo', () => {
+  const lesson = explainAlpha(parseTraceLanguage(L5));
+
+  assert.equal(lesson.constructionVerification.transitions.passed, true);
+  assert.equal(lesson.constructionVerification.places.passed, true);
+  assert.equal(lesson.constructionVerification.flows.passed, true);
+  assert.deepEqual(lesson.constructionVerification.flows.actual, [...L5_REFERENCE.FL].sort());
+});
+
+test('la verificación detecta un arco incorrecto aunque el conteo no cambie', () => {
+  const lesson = explainAlpha(parseTraceLanguage(L5));
+  const alteredModel = structuredClone(lesson.model);
+  alteredModel.arcs[0] = { ...alteredModel.arcs[0], target: alteredModel.arcs[1].target };
+  const verification = verifyAlphaConstruction(lesson, alteredModel);
+
+  assert.equal(alteredModel.arcs.length, lesson.FL.length);
+  assert.equal(verification.flows.passed, false);
+  assert.equal(verification.flows.missing.length, 1);
+  assert.equal(verification.flows.unexpected.length, 1);
 });
 
