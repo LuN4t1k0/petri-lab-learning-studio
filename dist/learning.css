@@ -1,0 +1,231 @@
+.alpha-steps button:disabled {
+  cursor: not-allowed;
+  opacity: .38;
+}
+
+.set-display {
+  padding: 20px 18px;
+  font-size: clamp(14px, 1.5vw, 21px);
+}
+
+.log-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin-bottom: 18px;
+}
+
+.log-summary article {
+  display: grid;
+  padding: 18px;
+  border: 1px solid var(--ink);
+  background: white;
+  text-align: center;
+}
+
+.log-summary strong {
+  color: var(--acid-dark);
+  font: 28px var(--mono);
+}
+
+.log-summary span,
+.derived-sets small,
+.relation-groups small {
+  color: var(--muted);
+  font: 8px var(--mono);
+  text-transform: uppercase;
+}
+
+.variant-list {
+  display: grid;
+  gap: 7px;
+}
+
+.variant-list article {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  align-items: center;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  background: white;
+}
+
+.variant-list article > span {
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  color: white;
+  font: 9px var(--mono);
+}
+
+.variant-list code {
+  padding: 0 13px;
+  overflow-wrap: anywhere;
+  font: 12px var(--mono);
+}
+
+.variant-list b {
+  padding: 0 14px;
+  color: var(--orange);
+  font: 11px var(--mono);
+}
+
+.derived-sets,
+.relation-groups {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.derived-sets article:first-child {
+  grid-column: span 1;
+}
+
+.derived-sets small,
+.relation-groups small {
+  display: block;
+  margin-bottom: 7px;
+}
+
+.derived-sets .set-display,
+.relation-groups .set-display {
+  padding: 13px;
+  font-size: 12px;
+}
+
+.rule-box {
+  margin-bottom: 18px;
+  padding: 15px 18px;
+  border-left: 4px solid var(--acid-dark);
+  background: #edf1e7;
+}
+
+.rule-box b { font-size: 11px; }
+.rule-box p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+.rule-box code { color: var(--ink); font: 12px var(--mono); }
+
+.direct-evidence {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.direct-evidence article {
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: white;
+}
+
+.direct-evidence header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.direct-evidence header code { color: #1d6269; font: 14px var(--mono); }
+.direct-evidence header span { color: var(--muted); font: 8px var(--mono); }
+.direct-evidence article > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding-top: 8px;
+}
+.direct-evidence article > div span {
+  padding: 5px 7px;
+  background: #edf0e8;
+  font: 8px var(--mono);
+}
+
+.rule-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.rule-grid article {
+  padding: 13px;
+  border-top: 4px solid var(--acid-dark);
+  background: white;
+}
+
+.rule-grid b { font: 15px var(--mono); }
+.rule-grid p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.footprint td button {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.footprint td button:hover,
+.footprint td button:focus {
+  outline: 2px solid var(--ink);
+  outline-offset: -3px;
+}
+
+.relation-detail {
+  margin-top: 9px;
+  padding: 12px 14px;
+  background: #172e30;
+  color: white;
+  font: 10px/1.5 var(--mono);
+}
+
+.comparison-note {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto 1fr;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  background: #172e30;
+  color: white;
+}
+
+.comparison-note strong { color: var(--acid); font: 24px var(--mono); }
+.comparison-note span { font: 9px var(--mono); }
+.comparison-note b { color: var(--orange); }
+.candidate-grid > div.maximal {
+  border-color: var(--ink);
+  box-shadow: inset 4px 0 0 var(--acid-dark);
+}
+
+.network-summary {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.network-summary span {
+  padding: 7px 10px;
+  background: #172e30;
+  color: white;
+  font: 8px var(--mono);
+}
+
+@media (max-width: 850px) {
+  .direct-evidence,
+  .rule-grid,
+  .relation-groups,
+  .derived-sets { grid-template-columns: 1fr; }
+}
+

@@ -11,5 +11,12 @@ test('el build publica los módulos del navegador en dist/assets', async () => {
   await access('dist/assets/miners/alpha-miner.js');
   await access('dist/assets/ui/svg-renderer.js');
   const html = await readFile('dist/index.html', 'utf8');
+  const app = await readFile('dist/assets/app.js', 'utf8');
+  const styles = await readFile('dist/learning.css', 'utf8');
   assert.match(html, /src="\.\/assets\/app\.js"/);
+  assert.match(app, /Directly Follows/);
+  assert.match(app, /direct-evidence/);
+  assert.match(app, /Cómo se obtiene/);
+  assert.match(styles, /\.direct-evidence/);
+  assert.match(html, /href="\.\/learning\.css"/);
 });

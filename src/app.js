@@ -8,7 +8,7 @@ import { renderPetriNet } from './ui/svg-renderer.js';
 
 const $ = (selector, scope = document) => scope.querySelector(selector);
 const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
-const defaultLog = '<a,b,c,d>^3\n<a,c,b,d>^2\n<a,e,d>';
+const defaultLog = '<a,b,e,f>^2\n<a,b,e,c,d,b,f>^3\n<a,b,c,e,d,b,f>^2\n<a,b,c,d,e,b,f>^4\n<a,e,b,c,d,b,f>^3';
 const saved = (() => { try { return JSON.parse(localStorage.getItem('petrilab-learning-project') ?? '{}'); } catch { return {}; } })();
 let logText = saved.logText ?? defaultLog;
 let lesson = explainAlpha(parseTraceLanguage(logText));
@@ -17,6 +17,7 @@ let marking = { ...(manualModel.initialMarking ?? {}) };
 let trace = [];
 let mode = 'discover';
 let alphaStep = 0;
+let furthestAlphaStep = 0;
 const logInput = $('#event-log');
 logInput.value = logText;
 
@@ -54,47 +55,112 @@ function updateMode(nextMode) {
   $('#editor-title').textContent = mode === 'simulate' ? 'Dispara transiciones habilitadas' : mode === 'check' ? 'Evidencia estructural y dinámica' : 'Red del estudiante';
 }
 
-function setList(values, formatter = (value) => value) { return `<div class="set-display">{ ${values.map(formatter).join(', ') || '∅'} }</div>`; }
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[character]); }
+function setList(values, formatter = (value) => value) { return `<div class="set-display">{ ${values.map((value) => escapeHtml(formatter(value))).join(', ') || '∅'} }</div>`; }
+function traceText(activities) { return `⟨${activities.map(escapeHtml).join(', ')}⟩`; }
+
+function logOverview() {
+  return `<div class="log-summary">
+    <article><strong>${lesson.variants.length}</strong><span>variantes</span></article>
+    <article><strong>${lesson.totalCases}</strong><span>casos</span></article>
+    <article><strong>${lesson.TL.length}</strong><span>actividades</span></article>
+  </div>
+  <div class="variant-list">${lesson.variants.map((variant) => `<article>
+    <span>V${variant.index}</span><code>${traceText(variant.activities)}</code><b>× ${variant.frequency}</b>
+  </article>`).join('')}</div>
+  <div class="derived-sets">
+    <article><small>T<sub>L</sub> · actividades</small>${setList(lesson.TL)}</article>
+    <article><small>T<sub>I</sub> · inicio</small>${setList(lesson.TI)}</article>
+    <article><small>T<sub>O</sub> · fin</small>${setList(lesson.TO)}</article>
+  </div>`;
+}
+
+function directEvidence() {
+  return `<div class="rule-box"><b>Cómo se obtiene</b><p><code>a &gt;<sub>L</sub> b</code> cuando <b>b aparece inmediatamente después de a</b> en al menos una traza.</p></div>
+  <h4>Conjunto &gt;<sub>L</sub></h4>
+  ${setList(lesson.directlyFollows, (relation) => relation.key)}
+  <div class="direct-evidence">${lesson.directlyFollows.map((relation) => `<article>
+    <header><code>${escapeHtml(relation.key)}</code><span>${relation.caseCount} caso${relation.caseCount === 1 ? '' : 's'}</span></header>
+    <div>${relation.evidence.map((item) => `<span>V${item.variantIndex} · posición ${item.positions.map((position) => `${position}→${position + 1}`).join(', ')} · ×${item.frequency}</span>`).join('')}</div>
+  </article>`).join('')}</div>`;
+}
+
 function footprintTable() {
   const activities = lesson.TL;
-  return `<div class="footprint-wrap"><table class="footprint"><thead><tr><th></th>${activities.map((a) => `<th>${a}</th>`).join('')}</tr></thead><tbody>${activities.map((left) => `<tr><th>${left}</th>${activities.map((right) => { const relation = lesson.footprint[left][right]; const kind = relation === '#' ? 'choice' : relation === '∥' ? 'parallel' : 'causal'; return `<td class="rel-${kind}" title="${left} ${relation} ${right}">${relation}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>`;
+  return `<div class="footprint-wrap"><table class="footprint"><thead><tr><th></th>${activities.map((a) => `<th>${escapeHtml(a)}</th>`).join('')}</tr></thead><tbody>${activities.map((left) => `<tr><th>${escapeHtml(left)}</th>${activities.map((right) => { const relation = lesson.footprint[left][right]; const kind = relation === '#' ? 'choice' : relation === '∥' ? 'parallel' : 'causal'; return `<td class="rel-${kind}"><button data-left="${escapeHtml(left)}" data-right="${escapeHtml(right)}" data-relation="${relation}" title="Explicar ${escapeHtml(left)} ${relation} ${escapeHtml(right)}">${relation}</button></td>`; }).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+
+function footprintStep() {
+  return `<div class="rule-grid">
+    <article><b>a → b</b><p>Existe a &gt; b y no existe b &gt; a.</p></article>
+    <article><b>a ∥ b</b><p>Existen a &gt; b y b &gt; a.</p></article>
+    <article><b>a # b</b><p>No existe sucesión directa en ningún sentido.</p></article>
+  </div>
+  <div class="relation-groups">
+    <article><small>Causalidad</small>${setList(lesson.relationSets.causality)}</article>
+    <article><small>Paralelismo</small>${setList(lesson.relationSets.parallel)}</article>
+    <article><small>Sin relación</small>${setList(lesson.relationSets.unrelated)}</article>
+  </div>
+  <h4>Matriz footprint · selecciona una celda</h4>
+  ${footprintTable()}
+  <div class="relation-detail" id="relation-detail">Selecciona una relación para ver cómo se obtiene.</div>`;
+}
+
+function candidateCards(candidates, maximal = false) {
+  return `<div class="candidate-grid">${candidates.map((pair) => `<div class="${maximal ? 'maximal' : ''}"><span>{${pair.inputs.map(escapeHtml).join(', ')}}</span><b>→</b><span>{${pair.outputs.map(escapeHtml).join(', ')}}</span></div>`).join('')}</div>`;
+}
+
+function relationExplanation(left, right, relation) {
+  const forward = lesson.directlyFollows.some((item) => item.left === left && item.right === right);
+  const reverse = lesson.directlyFollows.some((item) => item.left === right && item.right === left);
+  if (relation === '→') return `${left} → ${right}: existe ${left} > ${right} y no existe ${right} > ${left}.`;
+  if (relation === '←') return `${left} ← ${right}: no existe ${left} > ${right}, pero sí existe ${right} > ${left}.`;
+  if (relation === '∥') return `${left} ∥ ${right}: existen ${left} > ${right} y ${right} > ${left}.`;
+  return `${left} # ${right}: ${forward || reverse ? 'la relación no queda clasificada como causal' : 'no existe sucesión directa en ningún sentido'}.`;
 }
 
 function renderAlphaStep() {
   const nav = $('#alpha-steps');
   nav.replaceChildren(...lesson.steps.map((step, index) => {
     const button = document.createElement('button'); button.className = index === alphaStep ? 'active' : index < alphaStep ? 'done' : '';
-    button.innerHTML = `<span>${index < alphaStep ? '✓' : index + 1}</span><small>${step.key === 'alpha' ? 'α(L)' : step.key}</small>`;
+    const labels = { log: 'Log', direct: '>L', footprint: 'Matriz', XL: 'XL', YL: 'YL', PL: 'PL', FL: 'FL', alpha: 'WF' };
+    button.innerHTML = `<span>${index < alphaStep ? '✓' : index + 1}</span><small>${labels[step.key]}</small>`;
+    button.disabled = index > furthestAlphaStep;
     button.addEventListener('click', () => { alphaStep = index; renderAlphaStep(); }); return button;
   }));
   $('#alpha-progress').textContent = `Paso ${alphaStep + 1} de 8`; $('#alpha-progress-bar').style.width = `${((alphaStep + 1) / 8) * 100}%`;
   const step = lesson.steps[alphaStep];
   const explanations = {
-    TL: ['Actividades observadas', 'Reunimos todas las actividades diferentes que aparecen al menos una vez en el log.'],
-    TI: ['Actividades iniciales', 'Buscamos la primera actividad de cada traza. Son las candidatas a recibir el token inicial.'],
-    TO: ['Actividades finales', 'Buscamos la última actividad de cada traza. Conducirán al lugar final.'],
-    XL: ['Pares candidatos y footprint', 'La matriz resume causalidad (→), relación inversa (←), paralelismo (∥) y elección (#). Con ella formamos pares de conjuntos causales.'],
-    YL: ['Pares maximales', 'Eliminamos candidatos contenidos en otros. Cada par maximal se convertirá en un lugar de la red.'],
+    log: ['Comprende el event log', 'Antes de calcular relaciones identificamos variantes, frecuencias, actividades y extremos del proceso.'],
+    direct: ['Directly Follows', 'Recorremos cada variante de izquierda a derecha y reunimos todas las parejas consecutivas.'],
+    footprint: ['Causalidad, paralelismo y unrelated', 'Comparamos cada par de actividades en ambos sentidos y construimos la matriz footprint.'],
+    XL: ['Conjunto Xₗ', 'Formamos todos los pares (A,B) donde cada actividad de A causa a cada actividad de B y no hay relaciones internas en A ni en B.'],
+    YL: ['Conjunto Yₗ', 'Conservamos solo los candidatos maximales de Xₗ. Cada elemento de Yₗ se convertirá en un lugar.'],
     PL: ['Lugares de la red', 'Creamos un lugar inicial, uno por cada par maximal y un lugar final.'],
     FL: ['Relación de flujo', 'Conectamos actividades y lugares según los conjuntos de entrada y salida, incluyendo inicio y fin.'],
-    alpha: ['Red descubierta α(L)', 'El resultado integra actividades, lugares y arcos derivados únicamente del comportamiento observado.'],
+    alpha: ['Workflow Net descubierta', 'Representamos gráficamente los lugares, transiciones y arcos deducidos en los pasos anteriores.'],
   };
   const [title, description] = explanations[step.key];
   let body = '';
-  if (['TL', 'TI', 'TO'].includes(step.key)) body = setList(step.value);
-  if (step.key === 'XL') body = `${footprintTable()}<h4>X<sub>L</sub> · candidatos</h4>${setList(step.value, (pair) => pair.key)}`;
-  if (step.key === 'YL') body = `<div class="candidate-grid">${step.value.map((pair) => `<div><span>${pair.inputs.join(',')}</span><b>→</b><span>${pair.outputs.join(',')}</span></div>`).join('')}</div>`;
+  if (step.key === 'log') body = logOverview();
+  if (step.key === 'direct') body = directEvidence();
+  if (step.key === 'footprint') body = footprintStep();
+  if (step.key === 'XL') body = `<div class="rule-box"><b>Cómo se obtiene X<sub>L</sub></b><p>Se combinan conjuntos causalmente conectados cuyos elementos internos están relacionados por #.</p></div><h4>${step.value.length} candidatos</h4>${candidateCards(step.value)}`;
+  if (step.key === 'YL') body = `<div class="comparison-note"><strong>${lesson.XL.length}</strong><span>candidatos X<sub>L</sub></span><b>→</b><strong>${lesson.YL.length}</strong><span>maximales Y<sub>L</sub></span></div>${candidateCards(step.value, true)}`;
   if (step.key === 'PL' || step.key === 'FL') body = `<div class="formula-list">${step.value.map((value) => `<code>${value}</code>`).join('')}</div>`;
-  if (step.key === 'alpha') body = '<div class="alpha-model-canvas" id="alpha-model-canvas"></div>';
-  $('#alpha-step-content').innerHTML = `<header><span>${alphaStep + 1}</span><div><small>${step.key === 'alpha' ? 'α(L)' : step.key}</small><h3>${title}</h3><p>${description}</p></div></header>${body}<footer><button id="prev-alpha" ${alphaStep === 0 ? 'disabled' : ''}>← Anterior</button><button id="next-alpha" ${alphaStep === 7 ? 'disabled' : ''}>Siguiente →</button></footer>`;
-  $('#prev-alpha').addEventListener('click', () => { alphaStep -= 1; renderAlphaStep(); }); $('#next-alpha').addEventListener('click', () => { alphaStep += 1; renderAlphaStep(); });
+  if (step.key === 'alpha') body = `<div class="network-summary"><span>${lesson.model.nodes.filter((node) => node.type === 'place').length} lugares</span><span>${lesson.model.nodes.filter((node) => node.type === 'transition').length} transiciones</span><span>${lesson.model.arcs.length} arcos</span></div><div class="alpha-model-canvas" id="alpha-model-canvas"></div>`;
+  const notation = { log: 'L', direct: '>ₗ', footprint: '→ ∥ #', XL: 'Xₗ', YL: 'Yₗ', PL: 'Pₗ', FL: 'Fₗ', alpha: 'WF' };
+  $('#alpha-step-content').innerHTML = `<header><span>${alphaStep + 1}</span><div><small>${notation[step.key]}</small><h3>${title}</h3><p>${description}</p></div></header>${body}<footer><button id="prev-alpha" ${alphaStep === 0 ? 'disabled' : ''}>← Anterior</button><button id="next-alpha" ${alphaStep === 7 ? 'disabled' : ''}>Siguiente paso →</button></footer>`;
+  $('#prev-alpha').addEventListener('click', () => { alphaStep -= 1; renderAlphaStep(); });
+  $('#next-alpha').addEventListener('click', () => { alphaStep += 1; furthestAlphaStep = Math.max(furthestAlphaStep, alphaStep); renderAlphaStep(); });
+  $$('.footprint button').forEach((button) => button.addEventListener('click', () => { $('#relation-detail').textContent = relationExplanation(button.dataset.left, button.dataset.right, button.dataset.relation); }));
   if (step.key === 'alpha') renderPetriNet($('#alpha-model-canvas'), lesson.model);
-  setNotation(step.key === 'alpha' ? 'α(L)' : step.key, title, description, step.key === 'XL' ? '<div class="relation-key"><span>→ causal</span><span>∥ paralelo</span><span># elección</span></div>' : '');
+  setNotation(notation[step.key], title, description, step.key === 'footprint' ? '<div class="relation-key"><span>→ causal</span><span>∥ paralelo</span><span># unrelated</span></div>' : '');
 }
 
 function calculateAlpha() {
   $('#log-error').textContent = '';
-  try { logText = logInput.value; const log = parseTraceLanguage(logText); lesson = explainAlpha(log); $('#log-case-count').textContent = `${log.totalCases} casos`; alphaStep = 0; renderAlphaStep(); persist(); }
+  try { logText = logInput.value; const log = parseTraceLanguage(logText); lesson = explainAlpha(log); $('#log-case-count').textContent = `${log.totalCases} casos`; alphaStep = 0; furthestAlphaStep = 0; renderAlphaStep(); persist(); }
   catch (error) { $('#log-error').textContent = error.message; }
 }
 

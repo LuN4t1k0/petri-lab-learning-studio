@@ -129,6 +129,41 @@ function formatCandidate(candidate) {
   return { inputs, outputs, key: `{${inputs.join(',')}}→{${outputs.join(',')}}` };
 }
 
+function explainDirectlyFollows(log) {
+  const relations = new Map();
+  log.variants.forEach((variant, variantIndex) => {
+    const positionsByPair = new Map();
+    for (let index = 0; index < variant.activities.length - 1; index += 1) {
+      const left = variant.activities[index];
+      const right = variant.activities[index + 1];
+      const key = pairKey(left, right);
+      if (!positionsByPair.has(key)) positionsByPair.set(key, []);
+      positionsByPair.get(key).push(index + 1);
+      if (!relations.has(key)) {
+        relations.set(key, {
+          left,
+          right,
+          key: `${left} > ${right}`,
+          caseCount: 0,
+          occurrenceCount: 0,
+          evidence: [],
+        });
+      }
+    }
+    for (const [key, positions] of positionsByPair) {
+      const relation = relations.get(key);
+      relation.caseCount += variant.frequency;
+      relation.occurrenceCount += positions.length * variant.frequency;
+      relation.evidence.push({
+        variantIndex: variantIndex + 1,
+        frequency: variant.frequency,
+        positions,
+      });
+    }
+  });
+  return [...relations.values()].sort((left, right) => left.key.localeCompare(right.key, 'es'));
+}
+
 export function explainAlpha(log) {
   const analysis = analyzeAlphaRelations(log);
   const footprint = Object.fromEntries(log.activities.map((left) => [left, Object.fromEntries(
@@ -149,19 +184,41 @@ export function explainAlpha(log) {
     ]),
     ...sorted(analysis.ends).map((activity) => `${activity}→o_L`),
   ];
+  const variants = log.variants.map((variant, index) => ({
+    index: index + 1,
+    activities: [...variant.activities],
+    frequency: variant.frequency,
+  }));
+  const directlyFollows = explainDirectlyFollows(log);
+  const relationSets = {
+    causality: analysis.causalPairs.map(([left, right]) => `${left} → ${right}`),
+    parallel: analysis.parallelPairs.map(([left, right]) => `${left} ∥ ${right}`),
+    unrelated: analysis.choicePairs.map(([left, right]) => `${left} # ${right}`),
+  };
   const result = {
-    TL: [...log.activities], TI: sorted(analysis.starts), TO: sorted(analysis.ends),
-    footprint, XL, YL, PL, FL, model: mineAlpha(log),
+    totalCases: log.totalCases,
+    variants,
+    TL: [...log.activities],
+    TI: sorted(analysis.starts),
+    TO: sorted(analysis.ends),
+    directlyFollows,
+    relationSets,
+    footprint,
+    XL,
+    YL,
+    PL,
+    FL,
+    model: mineAlpha(log),
   };
   result.steps = [
-    { key: 'TL', title: '1. Actividades observadas', value: result.TL },
-    { key: 'TI', title: '2. Actividades iniciales', value: result.TI },
-    { key: 'TO', title: '3. Actividades finales', value: result.TO },
+    { key: 'log', title: '1. Event log', value: result.variants },
+    { key: 'direct', title: '2. Directly Follows', value: result.directlyFollows },
+    { key: 'footprint', title: '3. Footprint', value: result.relationSets },
     { key: 'XL', title: '4. Pares candidatos', value: result.XL },
     { key: 'YL', title: '5. Pares maximales', value: result.YL },
     { key: 'PL', title: '6. Lugares', value: result.PL },
     { key: 'FL', title: '7. Flujo', value: result.FL },
-    { key: 'alpha', title: '8. Red α(L)', value: result.model },
+    { key: 'alpha', title: '8. Workflow Net', value: result.model },
   ];
   return result;
 }

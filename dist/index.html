@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./learning.css">
 </head>
 <body>
   <header class="topbar">
@@ -33,9 +34,11 @@
         <aside class="control-rail">
           <section class="rail-panel" data-panel="discover">
             <div class="panel-title"><span>Entrada</span><h2>Event log</h2></div><label for="event-log">Una variante por línea</label>
-            <div class="log-editor"><div><span>event.log</span><span id="log-case-count">6 casos</span></div><textarea id="event-log" spellcheck="false"><a,b,c,d>^3
-<a,c,b,d>^2
-<a,e,d></textarea></div>
+            <div class="log-editor"><div><span>event.log</span><span id="log-case-count">14 casos</span></div><textarea id="event-log" spellcheck="false"><a,b,e,f>^2
+<a,b,e,c,d,b,f>^3
+<a,b,c,e,d,b,f>^2
+<a,b,c,d,e,b,f>^4
+<a,e,b,c,d,b,f>^3</textarea></div>
             <p class="hint"><code>&lt;a,b,c&gt;^3</code> significa tres casos con esa secuencia.</p><p class="form-error" id="log-error" role="alert"></p>
             <button class="primary-action" id="discover-button">Calcular α(L) <b>→</b></button><button class="secondary-action" id="load-alpha-model">Abrir resultado en el editor</button>
           </section>
@@ -54,7 +57,7 @@
           </section>
         </aside>
         <section class="stage">
-          <div id="alpha-stage"><header class="stage-header"><div><small>Lección guiada</small><h2>Algoritmo Alpha, paso a paso</h2></div><div class="lesson-status"><span id="alpha-progress">Paso 1 de 8</span><i><b id="alpha-progress-bar"></b></i></div></header><nav class="alpha-steps" id="alpha-steps" aria-label="Pasos del algoritmo Alpha"></nav><article class="alpha-content" id="alpha-step-content"></article></div>
+          <div id="alpha-stage"><header class="stage-header"><div><small>Del event log a la red</small><h2>Algoritmo Alpha, paso a paso</h2></div><div class="lesson-status"><span id="alpha-progress">Paso 1 de 8</span><i><b id="alpha-progress-bar"></b></i></div></header><nav class="alpha-steps" id="alpha-steps" aria-label="Pasos del algoritmo Alpha"></nav><article class="alpha-content" id="alpha-step-content"></article></div>
           <div id="editor-stage" hidden><header class="stage-header"><div><small id="editor-kicker">Lienzo de trabajo</small><h2 id="editor-title">Red del estudiante</h2></div><div class="canvas-stats" id="canvas-stats">0 lugares · 0 transiciones · 0 arcos</div></header><div class="manual-canvas" id="manual-canvas"></div><footer class="canvas-help"><span>Arrastra para mover</span><span id="canvas-message">Selecciona una herramienta para comenzar</span></footer></div>
         </section>
         <aside class="coach-panel">
