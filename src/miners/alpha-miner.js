@@ -164,6 +164,62 @@ function explainDirectlyFollows(log) {
   return [...relations.values()].sort((left, right) => left.key.localeCompare(right.key, 'es'));
 }
 
+function analyzeShortLoops(log) {
+  const lengthOne = new Map();
+  const lengthTwo = new Map();
+  log.variants.forEach((variant, variantOffset) => {
+    const sequence = variant.activities;
+    for (let index = 0; index < sequence.length - 1; index += 1) {
+      if (sequence[index] !== sequence[index + 1]) continue;
+      const key = `${variantOffset}\u0000${sequence[index]}`;
+      if (!lengthOne.has(key)) {
+        lengthOne.set(key, { activity: sequence[index], variantIndex: variantOffset + 1, positions: [] });
+      }
+      lengthOne.get(key).positions.push(index + 1);
+    }
+    for (let index = 0; index < sequence.length - 2; index += 1) {
+      if (sequence[index] !== sequence[index + 2] || sequence[index] === sequence[index + 1]) continue;
+      const key = `${variantOffset}\u0000${sequence[index]}\u0000${sequence[index + 1]}`;
+      if (!lengthTwo.has(key)) {
+        lengthTwo.set(key, {
+          left: sequence[index],
+          middle: sequence[index + 1],
+          variantIndex: variantOffset + 1,
+          positions: [],
+        });
+      }
+      lengthTwo.get(key).positions.push(index + 1);
+    }
+  });
+  return {
+    shortLoopsOne: [...lengthOne.values()],
+    shortLoopsTwo: [...lengthTwo.values()],
+  };
+}
+
+const conformanceDimensions = [
+  {
+    key: 'fitness',
+    title: 'Fitness',
+    question: '¿El modelo puede reproducir el comportamiento observado en el event log?',
+  },
+  {
+    key: 'precision',
+    title: 'Precision',
+    question: '¿El modelo evita permitir demasiado comportamiento que nunca fue observado?',
+  },
+  {
+    key: 'generalization',
+    title: 'Generalization',
+    question: '¿El modelo admite comportamiento plausible sin memorizar solo las trazas vistas?',
+  },
+  {
+    key: 'simplicity',
+    title: 'Simplicity',
+    question: '¿El modelo expresa el proceso con la menor complejidad razonable?',
+  },
+];
+
 function unrelatedWithin(values) {
   return values.flatMap((left, index) => values.slice(index + 1).map((right) => `${left} # ${right}`));
 }
@@ -285,6 +341,8 @@ export function explainAlpha(log) {
     FL,
     placeExplanations,
     flowExplanations,
+    conformanceDimensions,
+    limitations: analyzeShortLoops(log),
     model: mineAlpha(log),
   };
   result.steps = [

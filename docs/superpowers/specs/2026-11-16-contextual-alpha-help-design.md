@@ -18,6 +18,9 @@ Se usa ayuda contextual dentro de cada paso. Se descartó una sección teórica 
 - `FL` identifica la regla que originó cada arco.
 - La Workflow Net permite seleccionar un lugar y consultar su procedencia matemática.
 - Un glosario contextual define `>`, `→`, `←`, `∥`, `#`, `XL`, `YL`, `PL` y `FL` sin abandonar el ejercicio.
+- El inicio explica que el objetivo es descubrir y generalizar el proceso, no copiar literalmente las trazas.
+- El cierre presenta fitness, precision, generalization y simplicity como criterios conceptuales de conformidad.
+- El cierre documenta las limitaciones de Alpha clásico y señala evidencia de bucles cortos de longitud 1 y 2 en el log actual.
 
 ## Restricciones
 
@@ -25,4 +28,5 @@ Se usa ayuda contextual dentro de cada paso. Se descartó una sección teórica 
 - No añadir dependencias ni servicios externos.
 - Derivar explicaciones de los datos calculados; no fijarlas al ejemplo `L5`.
 - Mantener accesibilidad por teclado y diseño responsive.
+- Diferenciar claramente entre diagnósticos calculados y advertencias conceptuales.
 

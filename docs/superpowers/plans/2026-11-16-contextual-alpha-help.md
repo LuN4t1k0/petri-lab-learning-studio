@@ -36,11 +36,11 @@
 **Interfaces:**
 - Produces: `candidateExplanations`, `maximality`, `placeExplanations`, `flowExplanations` dentro del resultado de `explainAlpha(log)`.
 
-- [ ] Escribir pruebas fallidas con `L5` para la validez de `XL`, descarte hacia `YL`, origen de lugares y reglas de arcos.
-- [ ] Ejecutar la prueba focal y confirmar campos ausentes.
-- [ ] Implementar las derivaciones usando los conjuntos ya calculados.
-- [ ] Ejecutar prueba focal y suite completa.
-- [ ] Commit del motor pedagógico.
+- [x] Escribir pruebas fallidas con `L5` para la validez de `XL`, descarte hacia `YL`, origen de lugares y reglas de arcos.
+- [x] Ejecutar la prueba focal y confirmar campos ausentes.
+- [x] Implementar las derivaciones usando los conjuntos ya calculados.
+- [x] Ejecutar prueba focal y suite completa.
+- [x] Commit del motor pedagógico.
 
 ### Task 2: Ayudas visuales y selección de procedencia
 
@@ -54,12 +54,19 @@
 - Consumes: derivaciones de Task 1.
 - Produces: paneles de objetivo/regla/ejemplo/error, detalles desplegables, glosario y selección de lugares en la red final.
 
-- [ ] Escribir pruebas de build fallidas para los nuevos componentes y callback del renderer.
-- [ ] Ejecutar la prueba focal y confirmar el fallo.
-- [ ] Implementar paneles, glosario y detalles por elemento.
-- [ ] Añadir `renderPetriNet(container, model, { onNodeSelect })` como opción compatible.
-- [ ] Construir y ejecutar toda la suite.
-- [ ] Commit de la experiencia educativa.
+- [x] Escribir pruebas de build fallidas para los nuevos componentes y callback del renderer.
+- [x] Ejecutar la prueba focal y confirmar el fallo.
+- [x] Implementar paneles, glosario y detalles por elemento.
+- [x] Añadir `renderPetriNet(container, model, { onNodeSelect })` como opción compatible.
+- [x] Construir y ejecutar toda la suite.
+- [x] Commit de la experiencia educativa.
+
+### Task 2b: Alineación con el material académico
+
+- [x] Contrastar el recorrido con la definición y los ejemplos del PDF de Alpha.
+- [x] Explicar proceso frente a trazas y sobreajuste.
+- [x] Presentar las cuatro dimensiones de conformidad sin simular métricas no calculadas.
+- [x] Detectar bucles cortos de longitud 1 y 2 y explicar las demás limitaciones clásicas.
 
 ### Task 3: Publicación y QA
 

@@ -29,6 +29,8 @@ La lección de descubrimiento avanza en orden y no adelanta resultados:
 
 Cada paso incluye objetivo, regla en lenguaje cotidiano, un ejemplo derivado del log actual y un error frecuente. Los candidatos de `XL`, descartes de `YL`, lugares y arcos pueden desplegar su justificación. En la matriz y en la red final también se puede seleccionar un elemento para rastrear su origen.
 
+El cierre relaciona el resultado con las cuatro dimensiones de conformidad (fitness, precision, generalization y simplicity), explica que se descubre el proceso en vez de memorizar trazas y advierte las limitaciones de Alpha clásico. La herramienta detecta y señala en el log bucles cortos de longitud 1 y 2, que requieren especial cuidado porque Alpha clásico no los representa correctamente.
+
 ## Ejecutar localmente
 
 Requiere Node.js 20 o superior y Python 3 para el servidor estático.
@@ -51,4 +53,4 @@ Después abre `http://localhost:4173`.
 
 ## Alcance académico
 
-La aplicación implementa Alpha clásico y una exploración acotada de estados. No sustituye un verificador formal ilimitado para redes no acotadas. Alpha clásico tiene limitaciones conocidas ante bucles cortos y logs incompletos o con ruido.
+La aplicación implementa Alpha clásico y una exploración acotada de estados. No sustituye un verificador formal ilimitado para redes no acotadas ni calcula todavía métricas numéricas de conformidad. Alpha clásico tiene limitaciones conocidas ante bucles cortos, dependencias no locales, lugares implícitos o redundantes y logs incompletos o con ruido.

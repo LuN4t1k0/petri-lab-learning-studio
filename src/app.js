@@ -152,7 +152,12 @@ function logOverview() {
     <article><small>T<sub>L</sub> · actividades</small>${setList(lesson.TL)}</article>
     <article><small>T<sub>I</sub> · inicio</small>${setList(lesson.TI)}</article>
     <article><small>T<sub>O</sub> · fin</small>${setList(lesson.TO)}</article>
-  </div>`;
+  </div>
+  <section class="discovery-context">
+    <h4>Descubrir el proceso, no copiar las trazas</h4>
+    <div><article><strong>El log es evidencia</strong><p>Contiene casos observados, no necesariamente todos los caminos que el proceso permite.</p></article><article><strong>El modelo debe generalizar</strong><p>Un proceso con bucles puede generar infinitas trazas; memorizar cada variante produciría sobreajuste.</p></article><article><strong>La salida es una Workflow Net</strong><p>Alpha resume relaciones del log como lugares, transiciones y arcos que explican el flujo.</p></article></div>
+    <aside><strong>Correspondencia con la definición formal</strong><p>Este primer paso visual reúne los pasos formales 1–3: <code>T<sub>L</sub></code>, <code>T<sub>I</sub></code> y <code>T<sub>O</sub></code>. Después calculamos las relaciones auxiliares y continuamos con <code>X<sub>L</sub></code>, <code>Y<sub>L</sub></code>, <code>P<sub>L</sub></code>, <code>F<sub>L</sub></code> y <code>α(L)</code>.</p></aside>
+  </section>`;
 }
 
 function directEvidence() {
@@ -240,6 +245,31 @@ function networkOrigin(node) {
     : `<strong>${escapeHtml(node.label || node.id)}</strong><p>Lugar de la red.</p>`;
 }
 
+function conformanceAndLimitations() {
+  const oneLoops = lesson.limitations.shortLoopsOne;
+  const twoLoops = lesson.limitations.shortLoopsTwo;
+  const loopOneEvidence = oneLoops.length
+    ? oneLoops.map((item) => `<code>V${item.variantIndex}: ${escapeHtml(item.activity)},${escapeHtml(item.activity)}</code>`).join(' ')
+    : 'No se observó ninguno en este log.';
+  const loopTwoEvidence = twoLoops.length
+    ? twoLoops.map((item) => `<code>V${item.variantIndex}: ${escapeHtml(item.left)},${escapeHtml(item.middle)},${escapeHtml(item.left)}</code>`).join(' ')
+    : 'No se observó ninguno en este log.';
+  return `<section class="model-reading">
+    <h4>Dimensiones de conformidad</h4>
+    <p class="section-intro">Sirven para evaluar la calidad del modelo descubierto. Aquí se presentan como preguntas conceptuales; no son métricas numéricas calculadas por esta versión.</p>
+    <div class="conformance-grid">${lesson.conformanceDimensions.map((dimension) => `<article><span>${escapeHtml(dimension.title)}</span><p>${escapeHtml(dimension.question)}</p></article>`).join('')}</div>
+    <h4>Limitaciones de Alpha clásico</h4>
+    <p class="section-intro">La red es la salida correcta del algoritmo para estas relaciones, pero Alpha clásico no representa bien todos los procesos posibles.</p>
+    <div class="limitation-grid">
+      <article class="${oneLoops.length ? 'detected' : ''}"><strong>Bucles de longitud 1</strong><p>Una repetición <code>a,a</code> se vuelve <code>a &gt; a</code> y el footprint clásico no la transforma correctamente en un lazo.</p><small>${loopOneEvidence}</small></article>
+      <article class="${twoLoops.length ? 'detected' : ''}"><strong>Bucles de longitud 2</strong><p>Un patrón <code>a,b,a</code> puede confundirse con paralelismo porque aparecen ambos órdenes directos.</p><small>${loopTwoEvidence}</small></article>
+      <article><strong>Dependencias no locales</strong><p>Si la relación depende de contexto lejano y no de vecinos directos, el footprint puede perderla.</p><small>Requiere análisis adicional; no se diagnostica solo con una celda de la matriz.</small></article>
+      <article><strong>Lugares implícitos o redundantes</strong><p>El modelo descubierto puede contener lugares redundantes o no revelar lugares necesarios para distinguir comportamientos.</p><small>Debe revisarse junto con fitness, precision, generalization y simplicity.</small></article>
+    </div>
+    <p class="model-warning"><strong>Importante:</strong> que no detectemos un bucle corto en el log no demuestra que el proceso real no lo tenga; el log es una muestra del comportamiento.</p>
+  </section>`;
+}
+
 function renderAlphaStep() {
   const nav = $('#alpha-steps');
   nav.replaceChildren(...lesson.steps.map((step, index) => {
@@ -270,7 +300,7 @@ function renderAlphaStep() {
   if (step.key === 'YL') body = `<div class="comparison-note"><strong>${lesson.XL.length}</strong><span>candidatos X<sub>L</sub></span><b>→</b><strong>${lesson.YL.length}</strong><span>maximales Y<sub>L</sub></span></div><h4>Elementos maximales</h4>${candidateCards(step.value, true)}${maximalityExplanation()}`;
   if (step.key === 'PL') body = `<div class="formula-list">${step.value.map((value) => `<code>${value}</code>`).join('')}</div><h4>Procedencia de cada lugar</h4>${placeCards()}`;
   if (step.key === 'FL') body = `<div class="formula-list">${step.value.map((value) => `<code>${value}</code>`).join('')}</div><h4>Regla que produce cada arco</h4>${flowCards()}`;
-  if (step.key === 'alpha') body = `<div class="network-summary"><span>${lesson.model.nodes.filter((node) => node.type === 'place').length} lugares</span><span>${lesson.model.nodes.filter((node) => node.type === 'transition').length} transiciones</span><span>${lesson.model.arcs.length} arcos</span></div><div class="alpha-model-canvas" id="alpha-model-canvas"></div><div class="network-origin" id="network-origin"><strong>Selecciona un elemento de la red</strong><p>Verás qué actividad, par maximal o regla lo originó.</p></div>`;
+  if (step.key === 'alpha') body = `<div class="network-summary"><span>${lesson.model.nodes.filter((node) => node.type === 'place').length} lugares</span><span>${lesson.model.nodes.filter((node) => node.type === 'transition').length} transiciones</span><span>${lesson.model.arcs.length} arcos</span></div><div class="alpha-model-canvas" id="alpha-model-canvas"></div><div class="network-origin" id="network-origin"><strong>Selecciona un elemento de la red</strong><p>Verás qué actividad, par maximal o regla lo originó.</p></div>${conformanceAndLimitations()}`;
   const notation = { log: 'L', direct: '>ₗ', footprint: '→ ∥ #', XL: 'Xₗ', YL: 'Yₗ', PL: 'Pₗ', FL: 'Fₗ', alpha: 'WF' };
   $('#alpha-step-content').innerHTML = `<header><span>${alphaStep + 1}</span><div><small>${notation[step.key]}</small><h3>${title}</h3><p>${description}</p></div></header>${stepHelp(step.key)}${body}${alphaGlossary()}<footer><button id="prev-alpha" ${alphaStep === 0 ? 'disabled' : ''}>← Anterior</button><button id="next-alpha" ${alphaStep === 7 ? 'disabled' : ''}>Siguiente paso →</button></footer>`;
   $('#prev-alpha').addEventListener('click', () => { alphaStep -= 1; renderAlphaStep(); });

@@ -85,3 +85,23 @@ test('vincula lugares y arcos con la regla que los origina', () => {
   assert.equal(internalArc.rule, 'a ∈ A de {a,d}→{b}');
 });
 
+test('detecta bucles cortos que Alpha clásico no representa correctamente', () => {
+  const oneLoop = explainAlpha(parseTraceLanguage('<a,a,b>'));
+  const twoLoop = explainAlpha(parseTraceLanguage('<a,b,a,c>'));
+
+  assert.deepEqual(oneLoop.limitations.shortLoopsOne, [
+    { activity: 'a', variantIndex: 1, positions: [1] },
+  ]);
+  assert.deepEqual(twoLoop.limitations.shortLoopsTwo, [
+    { left: 'a', middle: 'b', variantIndex: 1, positions: [1] },
+  ]);
+});
+
+test('expone las dimensiones conceptuales para evaluar el modelo descubierto', () => {
+  const lesson = explainAlpha(parseTraceLanguage(L5));
+
+  assert.deepEqual(lesson.conformanceDimensions.map((item) => item.key), [
+    'fitness', 'precision', 'generalization', 'simplicity',
+  ]);
+});
+
